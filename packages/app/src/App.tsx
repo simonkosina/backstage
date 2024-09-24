@@ -82,6 +82,7 @@ import { customDevToolsPage } from './components/devtools/CustomDevToolsPage';
 import { DevToolsPage } from '@backstage/plugin-devtools';
 import { CatalogUnprocessedEntitiesPage } from '@backstage/plugin-catalog-unprocessed-entities';
 import { NotificationsPage } from '@backstage/plugin-notifications';
+import { CatalogInfoPage } from '@backstage/plugin-catalog-info';
 
 const app = createApp({
   apis,
@@ -211,6 +212,7 @@ const routes = (
       {customDevToolsPage}
     </Route>
     <Route path="/notifications" element={<NotificationsPage />} />
+    <Route path="/catalog-info" element={<CatalogInfoPage />} />
   </FlatRoutes>
 );
 
