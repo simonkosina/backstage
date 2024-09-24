@@ -54,7 +54,7 @@ export async function createRouter(
       const templates = await openShiftService.getTemplates();
       response.send(templates);
     } catch (e) {
-      logger.error(`GET '/templates' ERROR:\n{$e}`);
+      logger.error(`GET '/templates' ERROR:\n${e}`);
       response.status(500).send(e);
     }
   });
