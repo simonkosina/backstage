@@ -477,7 +477,7 @@ gocd:
 stackstorm:
   webUrl: https://your.stackstorm.webui.instance.com
 
-catalog-info:
+catalogInfo:
   baseUrl: ''
   authToken: ''
 

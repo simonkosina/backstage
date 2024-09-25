@@ -22,7 +22,6 @@ import {
 import express from 'express';
 import Router from 'express-promise-router';
 
-import { TemplateListSchema } from './types';
 import { OpenShiftService } from './openshift.service';
 
 export interface RouterOptions {
@@ -35,8 +34,8 @@ export async function createRouter(
 ): Promise<express.Router> {
   const { logger, config } = options;
 
-  const baseUrl = config.getString('catalog-info.baseUrl');
-  const authToken = config.getString('catalog-info.authToken');
+  const baseUrl = config.getString('catalogInfo.baseUrl');
+  const authToken = config.getString('catalogInfo.authToken');
 
   const openShiftService = new OpenShiftService(baseUrl, authToken);
 

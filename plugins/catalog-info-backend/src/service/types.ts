@@ -18,6 +18,7 @@ export interface OpenShiftAPI {
   getTemplates(): Promise<TemplateListSchema>;
 }
 
+// https://docs.openshift.com/container-platform/4.16/rest_api/objects/index.html#com.github.openshift.api.template.v1.TemplateList
 export type TemplateListSchema = {
   apiVersion: string;
   items: Template[];
