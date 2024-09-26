@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 import React from 'react';
-import { Typography, Grid } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import {
-  InfoCard,
   Header,
   Page,
   Content,
   ContentHeader,
   HeaderLabel,
   SupportButton,
+  TabbedLayout,
+  InfoCard,
 } from '@backstage/core-components';
 import { ExampleFetchComponent } from '../ExampleFetchComponent';
 
@@ -32,15 +33,27 @@ export const ExampleComponent = () => (
       <HeaderLabel label="Owner" value="Team X" />
       <HeaderLabel label="Lifecycle" value="Alpha" />
     </Header>
-    <Content>
-      <ContentHeader title="Plugin title">
-        <SupportButton>A description of your plugin goes here.</SupportButton>
-      </ContentHeader>
-      <Grid container spacing={3} direction="column">
-        <Grid item>
+    <TabbedLayout>
+      <TabbedLayout.Route path="/" title="Template List">
+        <Content>
+          <ContentHeader title="Template List">
+            <SupportButton>
+              A description of your plugin goes here.
+            </SupportButton>
+          </ContentHeader>
           <ExampleFetchComponent />
-        </Grid>
-      </Grid>
-    </Content>
+        </Content>
+      </TabbedLayout.Route>
+      <TabbedLayout.Route path="/another-tab" title="Another Tab">
+        <Content>
+          <ContentHeader title="Another Tab">
+            <SupportButton>
+              A description of your plugin goes here.
+            </SupportButton>
+          </ContentHeader>
+          <InfoCard>Nothing to see here :(</InfoCard>
+        </Content>
+      </TabbedLayout.Route>
+    </TabbedLayout>
   </Page>
 );

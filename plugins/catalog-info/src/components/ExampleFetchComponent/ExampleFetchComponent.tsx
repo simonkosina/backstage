@@ -15,40 +15,37 @@
  */
 import React from 'react';
 import {
-  Table,
-  TableColumn,
   Progress,
   ResponseErrorPanel,
+  ItemCardGrid,
+  ItemCardHeader,
 } from '@backstage/core-components';
 import useAsync from 'react-use/lib/useAsync';
 // FIXME: Sharing types between backend and frontend plugins? Project structure?
 import { Template, TemplateListSchema } from '../../types';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import { Card, CardContent, CardMedia } from '@material-ui/core';
 
-type DenseTableProps = {
+type TemplateCardsProps = {
   templates: Template[];
 };
 
-export const DenseTable = ({ templates }: DenseTableProps) => {
-  const columns: TableColumn[] = [
-    { title: 'Name', field: 'name' },
-    { title: 'Description', field: 'description' },
-  ];
-
-  const data = templates.map(template => {
-    return {
-      name: template.metadata.annotations['openshift.io/display-name'],
-      description: template.metadata.annotations.description,
-    };
-  });
-
+export const TemplateCards = ({ templates }: TemplateCardsProps) => {
   return (
-    <Table
-      title="Example Template List"
-      options={{ search: false, paging: false }}
-      columns={columns}
-      data={data}
-    />
+    <ItemCardGrid>
+      {templates.map((template, index) => (
+        <Card key={index}>
+          <CardMedia>
+            <ItemCardHeader
+              title={`${template.metadata.annotations['openshift.io/display-name']}`}
+            />
+          </CardMedia>
+          <CardContent>
+            {`${template.metadata.annotations.description}`}
+          </CardContent>
+        </Card>
+      ))}
+    </ItemCardGrid>
   );
 };
 
@@ -69,5 +66,5 @@ export const ExampleFetchComponent = () => {
     return <ResponseErrorPanel error={error} />;
   }
 
-  return <DenseTable templates={value.items || []} />;
+  return <TemplateCards templates={value.items || []} />;
 };
