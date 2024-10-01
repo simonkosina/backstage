@@ -25,11 +25,12 @@ import useAsync from 'react-use/lib/useAsync';
 import { Template, TemplateListSchema } from '../../types';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
+  Box,
   Button,
   Card,
   CardActionArea,
   CardContent,
-  CardMedia,
+  Chip,
   Divider,
   Drawer,
   IconButton,
@@ -51,7 +52,7 @@ type TemplateDrawerContentProps = {
 };
 
 // FIXME: Research styling practices in backstage/material UI
-const useTemplateCardsStyles = makeStyles({
+const useTemplateCardsStyles = makeStyles((theme: Theme) => ({
   cardActionArea: {
     width: '100%',
     height: '100%',
@@ -59,13 +60,20 @@ const useTemplateCardsStyles = makeStyles({
     flexDirection: 'column',
     justifyContent: 'flex-start',
   },
-  cardMedia: {
-    width: '100%',
-  },
   cardContent: {
     width: '100%',
   },
-});
+  headerBox: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing(2),
+  },
+  headerLogo: {
+    width: theme.spacing(7),
+  },
+  headerChip: {},
+}));
 
 const useTemplateDrawerContentStyles = makeStyles((theme: Theme) => ({
   header: {
@@ -129,13 +137,34 @@ export const TemplateCards = ({
               onCardClick(index);
             }}
           >
-            <CardMedia classes={{ root: classes.cardMedia }}>
-              <ItemCardHeader
-                title={`${template.metadata.annotations['openshift.io/display-name']}`}
-              />
-            </CardMedia>
             <CardContent classes={{ root: classes.cardContent }}>
-              {`${template.metadata.annotations.description}`}
+              <Box className={classes.headerBox}>
+                <img
+                  src={defaultImage}
+                  alt={
+                    template.metadata.annotations['openshift.io/display-name']
+                  }
+                  className={classes.headerLogo}
+                />
+                <Chip label="Label" />
+              </Box>
+              <Typography variant="body1">
+                {template.metadata.annotations[
+                  'openshift.io/display-name'
+                ].trim()}
+              </Typography>
+              {template.metadata.annotations[
+                'openshift.io/provider-display-name'
+              ]?.trim() && (
+                <Typography variant="caption">
+                  {`Provided by ${template.metadata.annotations[
+                    'openshift.io/provider-display-name'
+                  ].trim()}`}
+                </Typography>
+              )}
+              <Typography variant="body2">
+                {template.metadata.annotations.description.trim()}
+              </Typography>
             </CardContent>
           </CardActionArea>
         </Card>
