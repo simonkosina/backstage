@@ -39,6 +39,8 @@ import {
   Theme,
   Typography,
   makeStyles,
+  useMediaQuery,
+  useTheme,
 } from '@material-ui/core';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Close from '@material-ui/icons/Close';
@@ -71,7 +73,6 @@ const useTemplateCardsStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: theme.spacing(2),
   },
   headerLogo: {
     width: theme.spacing(7),
@@ -97,7 +98,6 @@ const useTemplateDrawerContentStyles = makeStyles((theme: Theme) => ({
     flexDirection: 'row',
     justifyContent: 'flex-start',
     marginTop: theme.spacing(2.5),
-    marginBottom: theme.spacing(2.5),
   },
   createButton: {
     width: theme.spacing(10),
@@ -113,19 +113,33 @@ const useTemplateDrawerContentStyles = makeStyles((theme: Theme) => ({
   closeIcon: {
     fontSize: 20,
   },
-  contentBox: {
+  divider: {
     marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(2),
+  },
+  contentBox: {
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-start',
+
+    [theme.breakpoints.down('sm')]: {
+      flexDirection: 'column-reverse',
+    },
   },
   contentDescription: {
     flexGrow: 1,
+
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
   },
   contentLabels: {
     flexShrink: 0,
     width: theme.spacing(20),
-    marginRight: theme.spacing(1),
+
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
+    },
   },
   labelDiv: {
     marginBottom: theme.spacing(1),
@@ -139,9 +153,18 @@ const useTemplateDrawerStyles = makeStyles((theme: Theme) => ({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     padding: theme.spacing(2.5),
+    transition: 'width 0.3s ease-in-out', // Add smooth transition for width changes
+
+    [theme.breakpoints.down('lg')]: {
+      width: '65%',
+    },
 
     [theme.breakpoints.down('md')]: {
-      width: '100%', // Full width on medium screens
+      width: '80%',
+    },
+
+    [theme.breakpoints.down('sm')]: {
+      width: '100%',
     },
   },
 }));
@@ -199,6 +222,9 @@ export const TemplateDrawerContent = ({
   onCloseClick,
 }: TemplateDrawerContentProps) => {
   const classes = useTemplateDrawerContentStyles();
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+
   const labels = {
     'Created at': (
       <Typography variant="body2">
@@ -227,6 +253,7 @@ export const TemplateDrawerContent = ({
     ),
   };
 
+  // TODO: Demo Platform seems to be rendering HTML elements in the catalog item description.
   return (
     <>
       <div className={classes.header}>
@@ -253,7 +280,7 @@ export const TemplateDrawerContent = ({
       <div className={classes.buttons}>
         <Button variant="contained">Create</Button>
       </div>
-      <Divider />
+      <Divider className={classes.divider} />
       <Box className={classes.contentBox}>
         <Box className={classes.contentLabels}>
           {Object.entries(labels).map(([key, value]) => (
@@ -265,6 +292,7 @@ export const TemplateDrawerContent = ({
             </div>
           ))}
         </Box>
+        {isSmallScreen && <Divider className={classes.divider} />}
         <Box className={classes.contentDescription}>
           <Typography variant="h4">Description</Typography>
           <Typography variant="body2">
