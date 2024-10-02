@@ -18,20 +18,20 @@ import {
   createRoutableExtension,
 } from '@backstage/core-plugin-api';
 
-import { rootRouteRef } from './routes';
+import { itemOrderSubRouteRef, indexRouteRef } from './routes';
 
 export const catalogInfoPlugin = createPlugin({
   id: 'catalog-info',
   routes: {
-    root: rootRouteRef,
+    index: indexRouteRef,
+    itemOrder: itemOrderSubRouteRef,
   },
 });
 
 export const CatalogInfoPage = catalogInfoPlugin.provide(
   createRoutableExtension({
-    name: 'CatalogInfoPage',
-    component: () =>
-      import('./components/ExampleComponent').then(m => m.ExampleComponent),
-    mountPoint: rootRouteRef,
+    name: 'CatalogItemPage',
+    component: () => import('./components/IndexPage').then(m => m.IndexPage),
+    mountPoint: indexRouteRef,
   }),
 );

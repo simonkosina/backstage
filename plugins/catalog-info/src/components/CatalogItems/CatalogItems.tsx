@@ -56,6 +56,7 @@ type TemplateDrawerContentProps = {
   onCloseClick: () => void;
 };
 
+// FIXME: Item/Template naming
 // FIXME: Research styling practices in backstage/material UI
 // TODO: Design the UI in a responsive way to scale properly on smaller screens!
 const useTemplateCardsStyles = makeStyles((theme: Theme) => ({
@@ -304,7 +305,7 @@ export const TemplateDrawerContent = ({
   );
 };
 
-export const ExampleFetchComponent = () => {
+export const CatalogItems = () => {
   const config = useApi(configApiRef);
   const classes = useTemplateDrawerStyles();
   const [drawerIsOpen, toggleDrawer] = useState(false);
