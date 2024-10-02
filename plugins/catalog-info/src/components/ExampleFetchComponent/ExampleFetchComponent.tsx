@@ -19,6 +19,7 @@ import {
   ResponseErrorPanel,
   ItemCardGrid,
   ItemCardHeader,
+  MarkdownContent,
 } from '@backstage/core-components';
 import useAsync from 'react-use/lib/useAsync';
 // FIXME: Sharing types between backend and frontend plugins? Project structure?
@@ -34,10 +35,12 @@ import {
   Divider,
   Drawer,
   IconButton,
+  Link,
   Theme,
   Typography,
   makeStyles,
 } from '@material-ui/core';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Close from '@material-ui/icons/Close';
 import defaultImage from '../../../assets/default.png';
 
@@ -52,6 +55,7 @@ type TemplateDrawerContentProps = {
 };
 
 // FIXME: Research styling practices in backstage/material UI
+// TODO: Design the UI in a responsive way to scale properly on smaller screens!
 const useTemplateCardsStyles = makeStyles((theme: Theme) => ({
   cardActionArea: {
     width: '100%',
@@ -109,6 +113,23 @@ const useTemplateDrawerContentStyles = makeStyles((theme: Theme) => ({
   closeIcon: {
     fontSize: 20,
   },
+  contentBox: {
+    marginTop: theme.spacing(2),
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+  },
+  contentDescription: {
+    flexGrow: 1,
+  },
+  contentLabels: {
+    flexShrink: 0,
+    width: theme.spacing(20),
+    marginRight: theme.spacing(1),
+  },
+  labelDiv: {
+    marginBottom: theme.spacing(1),
+  },
 }));
 
 const useTemplateDrawerStyles = makeStyles((theme: Theme) => ({
@@ -118,6 +139,10 @@ const useTemplateDrawerStyles = makeStyles((theme: Theme) => ({
     flexDirection: 'column',
     justifyContent: 'flex-start',
     padding: theme.spacing(2.5),
+
+    [theme.breakpoints.down('md')]: {
+      width: '100%', // Full width on medium screens
+    },
   },
 }));
 
@@ -148,22 +173,18 @@ export const TemplateCards = ({
                 />
                 <Chip label="Label" />
               </Box>
-              <Typography variant="body1">
-                {template.metadata.annotations[
-                  'openshift.io/display-name'
-                ].trim()}
+              <Typography variant="body1" style={{ fontWeight: 'bold' }}>
+                {template.metadata.annotations['openshift.io/display-name']}
               </Typography>
               {template.metadata.annotations[
                 'openshift.io/provider-display-name'
               ]?.trim() && (
                 <Typography variant="caption">
-                  {`Provided by ${template.metadata.annotations[
-                    'openshift.io/provider-display-name'
-                  ].trim()}`}
+                  {`Provided by ${template.metadata.annotations['openshift.io/provider-display-name']}`}
                 </Typography>
               )}
               <Typography variant="body2">
-                {template.metadata.annotations.description.trim()}
+                {template.metadata.annotations.description}
               </Typography>
             </CardContent>
           </CardActionArea>
@@ -178,6 +199,33 @@ export const TemplateDrawerContent = ({
   onCloseClick,
 }: TemplateDrawerContentProps) => {
   const classes = useTemplateDrawerContentStyles();
+  const labels = {
+    'Created at': (
+      <Typography variant="body2">
+        {new Date(template.metadata.creationTimestamp).toLocaleString()}
+      </Typography>
+    ),
+    Support: (
+      <Link
+        variant="body2"
+        target="_blank"
+        rel="noopener noreferrer"
+        href={template.metadata.annotations['openshift.io/support-url']}
+      >
+        Get Support <OpenInNewIcon fontSize="inherit" />
+      </Link>
+    ),
+    Documentation: (
+      <Link
+        variant="body2"
+        target="_blank"
+        rel="noopener noreferrer"
+        href={template.metadata.annotations['openshift.io/documentation-url']}
+      >
+        Refer Documentation <OpenInNewIcon fontSize="inherit" />
+      </Link>
+    ),
+  };
 
   return (
     <>
@@ -206,6 +254,24 @@ export const TemplateDrawerContent = ({
         <Button variant="contained">Create</Button>
       </div>
       <Divider />
+      <Box className={classes.contentBox}>
+        <Box className={classes.contentLabels}>
+          {Object.entries(labels).map(([key, value]) => (
+            <div className={classes.labelDiv}>
+              <Typography variant="body2" style={{ fontWeight: 'bold' }}>
+                {key}
+              </Typography>
+              {value}
+            </div>
+          ))}
+        </Box>
+        <Box className={classes.contentDescription}>
+          <Typography variant="h4">Description</Typography>
+          <Typography variant="body2">
+            {template.metadata.annotations.description}
+          </Typography>
+        </Box>
+      </Box>
     </>
   );
 };

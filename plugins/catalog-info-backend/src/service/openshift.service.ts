@@ -28,6 +28,7 @@ export class OpenShiftService implements OpenShiftAPI {
   async getTemplates(): Promise<TemplateListSchema> {
     return await fetch(
       `${this.baseUrl}/apis/template.openshift.io/v1/templates`,
+      // `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/openshift/templates`,
       {
         headers: {
           Authorization: `Bearer ${this.authToken}`,
