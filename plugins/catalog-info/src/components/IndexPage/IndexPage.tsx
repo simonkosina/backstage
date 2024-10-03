@@ -21,53 +21,83 @@ import {
   ContentHeader,
   HeaderLabel,
   SupportButton,
-  TabbedLayout,
   InfoCard,
+  HeaderTabs,
 } from '@backstage/core-components';
 import { CatalogItems } from '../CatalogItems';
-import { Navigate } from 'react-router-dom';
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { indexRouteRef } from '../../routes';
 import { useRouteRef } from '@backstage/core-plugin-api';
+import { FlatRoutes } from '@backstage/core-app-api';
+import { ItemOrder } from '../ItemOrder/ItemOrder';
 
-const Wrapper = ({ children }: PropsWithChildren<{}>) => {
-  const getIndexPath = useRouteRef(indexRouteRef);
-
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={<Navigate to={`${getIndexPath()}/templates`} replace />}
-      />
-      <Route path="/*" element={<>{children}</>} />
-    </Routes>
-  );
+type Tab = {
+  id: string;
+  label: string;
 };
 
+function getSelectedIndex(pathname: string, tabs: Tab[]): number {
+  const pathParts = pathname.split('/').filter(part => part.trim() !== '');
+
+  // Default to first tab in the list
+  if (pathParts.length < 2) {
+    return 0;
+  }
+
+  const id = pathParts[1];
+  const selectedIndex = tabs.findIndex(tab => tab.id === id);
+
+  return selectedIndex < 0 ? 0 : selectedIndex;
+}
+
 export const IndexPage = () => {
+  const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const getIndexPath = useRouteRef(indexRouteRef);
+
+  const tabs: Tab[] = [
+    { id: 'templates', label: 'Templates' },
+    { id: 'second-tab', label: 'Second Tab' },
+  ];
+
+  // FIXME: Error page when path doesn't exist
   return (
-    <Wrapper>
-      <Page themeId="tool">
-        <Header title="Welcome to catalog-info!" subtitle="Optional subtitle">
-          <HeaderLabel label="Owner" value="Team X" />
-          <HeaderLabel label="Lifecycle" value="Alpha" />
-          <SupportButton>A description of your plugin goes here.</SupportButton>
-        </Header>
-        <TabbedLayout>
-          <TabbedLayout.Route path="/templates" title="Template List">
+    <Page themeId="tool">
+      <Header title="Welcome to catalog-info!" subtitle="Optional subtitle">
+        <HeaderLabel label="Owner" value="Team X" />
+        <HeaderLabel label="Lifecycle" value="Alpha" />
+        <SupportButton>A description of your plugin goes here.</SupportButton>
+      </Header>
+      <HeaderTabs
+        tabs={tabs}
+        selectedIndex={getSelectedIndex(pathname, tabs)}
+        onChange={index => {
+          if (tabs[index]) {
+            navigate(`${getIndexPath()}/${tabs[index].id}`);
+          }
+        }}
+      />
+      <FlatRoutes>
+        <Route path={tabs[0].id} element={<CatalogItems />} />
+        <Route path={`${tabs[0].id}/order`} element={<ItemOrder />} />
+        <Route
+          path={tabs[1].id}
+          element={
             <Content>
-              <ContentHeader title="Template List" />
-              <CatalogItems />
+              <ContentHeader title="Second Tab" />
+              <InfoCard>
+                Nothing to see here, just for testing purposes. Later can be
+                used for displaying a list of user owned clusters.
+              </InfoCard>
             </Content>
-          </TabbedLayout.Route>
-          <TabbedLayout.Route path="/another-tab" title="Another Tab">
-            <Content>
-              <ContentHeader title="Another Tab" />
-              <InfoCard>Nothing to see here :(</InfoCard>
-            </Content>
-          </TabbedLayout.Route>
-        </TabbedLayout>
-      </Page>
-    </Wrapper>
+          }
+        />
+        <Route
+          path="/"
+          element={<Navigate to={`${getIndexPath()}/${tabs[0].id}`} replace />}
+        />
+      </FlatRoutes>
+    </Page>
   );
 };

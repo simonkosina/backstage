@@ -29,14 +29,8 @@ export const ItemOrder = () => {
   // const item = useRouteRefParams<{ item: string }>(orderRouteRef);
 
   return (
-    <Page themeId="tool">
-      <Header title="Welcome to catalog-info!" subtitle="Optional subtitle">
-        <HeaderLabel label="Owner" value="Team X" />
-        <HeaderLabel label="Lifecycle" value="Alpha" />
-      </Header>
-      <Content>
-        <ContentHeader title="Order Item" />
-      </Content>
-    </Page>
+    <Content>
+      <ContentHeader title="Order Item" />
+    </Content>
   );
 };

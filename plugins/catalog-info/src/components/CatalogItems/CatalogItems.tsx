@@ -15,6 +15,8 @@
  */
 import React, { useState } from 'react';
 import {
+  Content,
+  ContentHeader,
   Progress,
   ResponseErrorPanel,
   ItemCardGrid,
@@ -327,9 +329,10 @@ export const CatalogItems = () => {
 
   // FIXME: Erorr handling in value.items indexing
   return (
-    <>
+    <Content>
+      <ContentHeader title="Template List" />
       <TemplateCards
-        templates={value.items || []}
+        templates={value?.items || []}
         onCardClick={(index: number) => {
           setSelectedIndex(index);
           toggleDrawer(true);
@@ -343,11 +346,13 @@ export const CatalogItems = () => {
           paper: classes.paper,
         }}
       >
-        <TemplateDrawerContent
-          template={value.items[selectedIndex]}
-          onCloseClick={() => toggleDrawer(false)}
-        />
+        {value?.items?.[selectedIndex] && (
+          <TemplateDrawerContent
+            template={value.items[selectedIndex]}
+            onCloseClick={() => toggleDrawer(false)}
+          />
+        )}
       </Drawer>
-    </>
+    </Content>
   );
 };
