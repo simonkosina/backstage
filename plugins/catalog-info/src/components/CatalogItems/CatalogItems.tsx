@@ -20,8 +20,7 @@ import {
   Progress,
   ResponseErrorPanel,
   ItemCardGrid,
-  ItemCardHeader,
-  MarkdownContent,
+  LinkButton,
 } from '@backstage/core-components';
 import useAsync from 'react-use/lib/useAsync';
 // FIXME: Sharing types between backend and frontend plugins? Project structure?
@@ -29,7 +28,6 @@ import { Template, TemplateListSchema } from '../../types';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
   Box,
-  Button,
   Card,
   CardActionArea,
   CardContent,
@@ -47,6 +45,9 @@ import {
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Close from '@material-ui/icons/Close';
 import defaultImage from '../../../assets/default.png';
+import { indexRouteRef, itemOrderSubRouteRef } from '../../routes';
+import { useNavigate } from 'react-router-dom';
+import { useRouteRef } from '@backstage/core-plugin-api';
 
 type TemplateCardsProps = {
   templates: Template[];
@@ -76,6 +77,7 @@ const useTemplateCardsStyles = makeStyles((theme: Theme) => ({
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: theme.spacing(1),
   },
   headerLogo: {
     width: theme.spacing(7),
@@ -227,6 +229,7 @@ export const TemplateDrawerContent = ({
   const classes = useTemplateDrawerContentStyles();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
+  const createItemOrderRoute = useRouteRef(itemOrderSubRouteRef);
 
   const labels = {
     'Created at': (
@@ -281,7 +284,15 @@ export const TemplateDrawerContent = ({
         </div>
       </div>
       <div className={classes.buttons}>
-        <Button variant="contained">Create</Button>
+        <LinkButton
+          variant="contained"
+          to={createItemOrderRoute({
+            namespace: template.metadata.namespace,
+            name: template.metadata.name,
+          })}
+        >
+          Create
+        </LinkButton>
       </div>
       <Divider className={classes.divider} />
       <Box className={classes.contentBox}>

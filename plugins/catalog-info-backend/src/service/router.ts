@@ -47,13 +47,38 @@ export async function createRouter(
     response.json({ status: 'ok' });
   });
 
-  // FIXME: Error handling
+  // TODO: Imperove error handling
+
+  // Greedy routing, more specific routes need to be registered before the general routes to not get consumed.
+  router.get('/templates/:namespace/:name', async (request, response) => {
+    const { namespace, name } = request.params;
+
+    try {
+      const templates = await openShiftService.getTemplate(namespace, name);
+      response.send(templates);
+    } catch (e) {
+      const endpoint = `/templates/${namespace}/${name}`;
+      if (e instanceof Error) {
+        logger.error(`GET '${endpoint}' ERROR:\n${e.message}\n${e.stack}`);
+      } else {
+        logger.error(`GET '${endpoint}' ERROR:\n${e}`);
+      }
+
+      response.status(500).send(e);
+    }
+  });
+
   router.get('/templates', async (_, response) => {
     try {
       const templates = await openShiftService.getTemplates();
       response.send(templates);
     } catch (e) {
-      logger.error(`GET '/templates' ERROR:\n${e}`);
+      if (e instanceof Error) {
+        logger.error(`GET '/templates' ERROR:\n${e.message}\n${e.stack}`);
+      } else {
+        logger.error(`GET '/templates' ERROR:\n${e}`);
+      }
+
       response.status(500).send(e);
     }
   });

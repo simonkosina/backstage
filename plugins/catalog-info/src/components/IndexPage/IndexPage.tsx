@@ -27,7 +27,12 @@ import {
 import { CatalogItems } from '../CatalogItems';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Route } from 'react-router-dom';
-import { indexRouteRef } from '../../routes';
+import {
+  clustersSubRouteRef,
+  indexRouteRef,
+  itemOrderSubRouteRef,
+  templatesSubRouteRef,
+} from '../../routes';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { FlatRoutes } from '@backstage/core-app-api';
 import { ItemOrder } from '../ItemOrder/ItemOrder';
@@ -57,11 +62,12 @@ export const IndexPage = () => {
   const getIndexPath = useRouteRef(indexRouteRef);
 
   const tabs: Tab[] = [
-    { id: 'templates', label: 'Templates' },
-    { id: 'second-tab', label: 'Second Tab' },
+    { id: templatesSubRouteRef.path, label: 'Templates' },
+    { id: clustersSubRouteRef.path, label: 'Clusters' },
   ];
 
-  // FIXME: Error page when path doesn't exist
+  // TODO: Error page when path doesn't exist
+
   return (
     <Page themeId="tool">
       <Header title="Welcome to catalog-info!" subtitle="Optional subtitle">
@@ -74,18 +80,18 @@ export const IndexPage = () => {
         selectedIndex={getSelectedIndex(pathname, tabs)}
         onChange={index => {
           if (tabs[index]) {
-            navigate(`${getIndexPath()}/${tabs[index].id}`);
+            navigate(`${getIndexPath()}${tabs[index].id}`);
           }
         }}
       />
       <FlatRoutes>
-        <Route path={tabs[0].id} element={<CatalogItems />} />
-        <Route path={`${tabs[0].id}/order`} element={<ItemOrder />} />
+        <Route path={templatesSubRouteRef.path} element={<CatalogItems />} />
+        <Route path={itemOrderSubRouteRef.path} element={<ItemOrder />} />
         <Route
-          path={tabs[1].id}
+          path={clustersSubRouteRef.path}
           element={
             <Content>
-              <ContentHeader title="Second Tab" />
+              <ContentHeader title="Clusters" />
               <InfoCard>
                 Nothing to see here, just for testing purposes. Later can be
                 used for displaying a list of user owned clusters.
@@ -95,7 +101,12 @@ export const IndexPage = () => {
         />
         <Route
           path="/"
-          element={<Navigate to={`${getIndexPath()}/${tabs[0].id}`} replace />}
+          element={
+            <Navigate
+              to={`${getIndexPath()}/${templatesSubRouteRef.path}`}
+              replace
+            />
+          }
         />
       </FlatRoutes>
     </Page>

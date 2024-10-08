@@ -57,7 +57,7 @@ export type ObjectMeta = {
   generation: number;
   labels: { [key: string]: string };
   managedFields: ManagedFieldsEntry[];
-  name: string;
+  name: string; // unique inside a namespace
   namespace: string;
   ownerReferences: OwnerReference[];
   resourceVersion: string;

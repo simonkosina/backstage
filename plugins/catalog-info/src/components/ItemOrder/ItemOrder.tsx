@@ -15,22 +15,110 @@
  */
 import React from 'react';
 import {
-  Header,
-  Page,
   Content,
   ContentHeader,
-  HeaderLabel,
-  SupportButton,
+  Progress,
+  ResponseErrorPanel,
 } from '@backstage/core-components';
-// import { useRouteRefParams } from '@backstage/core-plugin-api';
-// import { orderRouteRef } from '../../routes';
+import { itemOrderSubRouteRef, templatesSubRouteRef } from '../../routes';
+import {
+  configApiRef,
+  useApi,
+  useRouteRef,
+  useRouteRefParams,
+} from '@backstage/core-plugin-api';
+import { Template } from '../../types';
+import useAsync from 'react-use/esm/useAsync';
+import {
+  Box,
+  Button,
+  FormControl,
+  TextField,
+  Theme,
+  makeStyles,
+} from '@material-ui/core';
+import Stack from '@mui/material/Stack';
+import { useNavigate } from 'react-router-dom';
+
+const useItemOrderStyles = makeStyles((theme: Theme) => ({
+  formControl: {
+    transition: 'width 0.3s ease-in-out',
+    width: theme.spacing(100),
+    maxWidth: theme.spacing(100),
+
+    [theme.breakpoints.down('md')]: {
+      width: '100%',
+      maxWidth: theme.spacing(100),
+    },
+  },
+}));
 
 export const ItemOrder = () => {
-  // const item = useRouteRefParams<{ item: string }>(orderRouteRef);
+  const classes = useItemOrderStyles();
+  const config = useApi(configApiRef);
+  const { namespace, name } = useRouteRefParams(itemOrderSubRouteRef);
+  const navigate = useNavigate();
+  const templatesRoute = useRouteRef(templatesSubRouteRef)();
+
+  // TODO: Explore caching options when user is redirected from the template list to the order page.
+  // All the data should be already available in such case.
+  const { value, loading, error } = useAsync(async (): Promise<Template> => {
+    const response = await fetch(
+      `${config.getString(
+        'backend.baseUrl',
+      )}/api/catalog-info/templates/${namespace}/${name}`,
+    );
+    return response.json();
+  }, []);
+
+  if (loading) {
+    return <Progress />;
+  } else if (error) {
+    return <ResponseErrorPanel error={error} />;
+  }
 
   return (
     <Content>
-      <ContentHeader title="Order Item" />
+      <ContentHeader
+        title={`Order ${value?.metadata.annotations['openshift.io/display-name']}`}
+      />
+      <Stack spacing={2}>
+        {value?.parameters.map(parameter => {
+          return (
+            <FormControl classes={{ root: classes.formControl }}>
+              <TextField
+                id={parameter.name.toString()}
+                size="small"
+                variant="outlined"
+                label={
+                  parameter.displayName
+                    ? parameter.displayName.toString()
+                    : parameter.name.toString()
+                }
+                defaultValue={parameter.value}
+                InputLabelProps={{
+                  shrink: true,
+                }}
+              />
+            </FormControl>
+          );
+        })}
+        <Stack spacing={2} direction="row">
+          <Button variant="contained">Order</Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (window.history.state?.idx !== 0) {
+                navigate(-1);
+              } else {
+                navigate(templatesRoute);
+              }
+            }}
+          >
+            Cancel
+          </Button>
+        </Stack>
+      </Stack>
     </Content>
   );
 };

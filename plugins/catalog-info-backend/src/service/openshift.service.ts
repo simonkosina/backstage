@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { OpenShiftAPI, TemplateListSchema } from './types';
+import { OpenShiftAPI, TemplateListSchema, Template } from './types';
 
 export class OpenShiftService implements OpenShiftAPI {
   baseUrl: string;
@@ -42,6 +42,26 @@ export class OpenShiftService implements OpenShiftAPI {
       }
 
       return response.json() as Promise<TemplateListSchema>;
+    });
+  }
+
+  async getTemplate(namespace: string, name: string): Promise<Template> {
+    return await fetch(
+      `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/${namespace}/templates/${name}`,
+      // `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/openshift/templates`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.authToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    ).then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      return response.json() as Promise<Template>;
     });
   }
 }
