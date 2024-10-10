@@ -13,8 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-import { OpenShiftAPI, TemplateListSchema, Template } from './types';
+import {
+  OpenShiftAPI,
+  TemplateListSchema,
+  Template,
+  Secret,
+  TemplateInstance,
+  PartialSecret,
+  PartialTemplateInstance,
+} from './types';
 
 export class OpenShiftService implements OpenShiftAPI {
   baseUrl: string;
@@ -62,6 +69,66 @@ export class OpenShiftService implements OpenShiftAPI {
       }
 
       return response.json() as Promise<Template>;
+    });
+  }
+
+  async createSecret(
+    namespace: string,
+    secret: PartialSecret,
+    dryRun?: boolean,
+  ): Promise<Secret> {
+    const url = new URL(
+      `${this.baseUrl}/api/v1/namespaces/${namespace}/secrets`,
+    );
+
+    if (dryRun) {
+      url.searchParams.append('dryRun', 'All');
+    }
+
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(secret),
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      return response.json() as Promise<Secret>;
+    });
+  }
+
+  async createTemplateInstance(
+    namespace: string,
+    templateInstance: PartialTemplateInstance,
+    dryRun?: boolean,
+  ): Promise<TemplateInstance> {
+    const url = new URL(
+      `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/${namespace}/templateinstances`,
+    );
+
+    if (dryRun) {
+      url.searchParams.append('dryRun', 'All');
+    }
+
+    return await fetch(url, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.authToken}`,
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(templateInstance),
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      return response.json() as Promise<TemplateInstance>;
     });
   }
 }

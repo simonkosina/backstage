@@ -18,6 +18,8 @@ export interface OpenShiftAPI {
   getTemplates(): Promise<TemplateListSchema>;
 }
 
+export type ArrayElement<A> = A extends (infer T)[] ? T : never;
+
 // https://docs.openshift.com/container-platform/4.16/rest_api/objects/index.html#com.github.openshift.api.template.v1.TemplateList
 export type TemplateListSchema = {
   apiVersion: string;
@@ -65,14 +67,66 @@ export type ObjectMeta = {
   uid: string;
 };
 
-// TODO:
+// TODO: If needed
 // https://docs.openshift.com/container-platform/4.16/rest_api/objects/index.html#io.k8s.apimachinery.pkg.runtime.RawExtension
 export type RawExtension = object;
 
-// TODO:
+// TODO: If needed
 // https://docs.openshift.com/container-platform/4.16/rest_api/objects/index.html#io.k8s.apimachinery.pkg.apis.meta.v1.ManagedFieldsEntry
 export type ManagedFieldsEntry = object;
 
-// TODO:
+// TODO: If needed
 // https://docs.openshift.com/container-platform/4.16/rest_api/objects/index.html#io.k8s.apimachinery.pkg.apis.meta.v1.OwnerReference
 export type OwnerReference = object;
+
+// https://docs.openshift.com/container-platform/4.16/rest_api/template_apis/templateinstance-template-openshift-io-v1.html#templateinstance-template-openshift-io-v1
+export type TemplateInstance = {
+  apiVersion: string;
+  kind: string;
+  metadata: ObjectMeta;
+  spec: TemplateInstanceSpec;
+  status?: TemplateInstanceStatus;
+};
+
+export type PartialTemplateInstance = Partial<
+  Omit<TemplateInstance, 'metadata' | 'spec' | 'status'>
+> & {
+  metadata?: Partial<ObjectMeta>;
+  spec?: Partial<TemplateInstanceSpec>;
+  status?: Partial<TemplateInstanceStatus>;
+};
+
+// https://docs.openshift.com/container-platform/4.16/rest_api/template_apis/templateinstance-template-openshift-io-v1.html#spec
+export type TemplateInstanceSpec = {
+  requester: TemplateInstanceRequester;
+  secret: LocalObjectSecret;
+  template: Template;
+};
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/objects/index.html#io-k8s-api-core-v1-LocalObjectReference_v2
+export type LocalObjectSecret = {
+  name: string;
+};
+
+// TODO: If needed
+// https://docs.openshift.com/container-platform/4.16/rest_api/template_apis/templateinstance-template-openshift-io-v1.html#spec-requester
+export type TemplateInstanceRequester = object;
+
+// TODO: If needed
+// https://docs.openshift.com/container-platform/4.16/rest_api/template_apis/templateinstance-template-openshift-io-v1.html#status
+export type TemplateInstanceStatus = object;
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/security_apis/secret-v1.html#secret-v1
+export type Secret = {
+  apiVersion: string;
+  data: object;
+  immutable: boolean;
+  kind: string;
+  metadata: ObjectMeta;
+  stringData: object;
+  type: string;
+};
+
+export type PartialSecret = Partial<Omit<Secret, 'metadata'>> & {
+  metadata?: Partial<ObjectMeta>;
+};

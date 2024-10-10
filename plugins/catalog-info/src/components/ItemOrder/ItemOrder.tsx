@@ -27,41 +27,174 @@ import {
   useRouteRef,
   useRouteRefParams,
 } from '@backstage/core-plugin-api';
-import { Template } from '../../types';
-import useAsync from 'react-use/esm/useAsync';
 import {
-  Box,
-  Button,
-  FormControl,
-  TextField,
-  Theme,
-  makeStyles,
-} from '@material-ui/core';
+  ArrayElement,
+  Template,
+  PartialSecret,
+  PartialTemplateInstance,
+  Secret,
+} from '../../types';
+import useAsync from 'react-use/esm/useAsync';
+import { Button, TextField, Theme, makeStyles } from '@material-ui/core';
 import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
 
 const useItemOrderStyles = makeStyles((theme: Theme) => ({
-  formControl: {
+  textField: {
     transition: 'width 0.3s ease-in-out',
-    width: theme.spacing(100),
-    maxWidth: theme.spacing(100),
+    width: theme.spacing(125),
+    maxWidth: theme.spacing(125),
 
     [theme.breakpoints.down('md')]: {
       width: '100%',
-      maxWidth: theme.spacing(100),
+      maxWidth: theme.spacing(125),
     },
   },
 }));
 
-export const ItemOrder = () => {
-  const classes = useItemOrderStyles();
-  const config = useApi(configApiRef);
-  const { namespace, name } = useRouteRefParams(itemOrderSubRouteRef);
+function generateDefaultValues(parameters: Template['parameters']) {
+  return parameters.reduce(
+    (
+      data: Record<string, boolean | string>,
+      parameter: ArrayElement<Template['parameters']>,
+    ) => {
+      return {
+        ...data,
+        [parameter.name.toString()]: parameter.value,
+      };
+    },
+    {},
+  );
+}
+
+type ItemFormProps = {
+  template: Template;
+};
+
+// TODO: Form validation
+export const ItemForm = ({ template }: ItemFormProps) => {
   const navigate = useNavigate();
   const templatesRoute = useRouteRef(templatesSubRouteRef)();
+  const config = useApi(configApiRef);
+  const classes = useItemOrderStyles();
+  const { register, handleSubmit } = useForm({
+    defaultValues: generateDefaultValues(template.parameters),
+  });
 
-  // TODO: Explore caching options when user is redirected from the template list to the order page.
-  // All the data should be already available in such case.
+  // TODO: Error handling
+  const onSubmit = async (data: Record<string, string | boolean>) => {
+    const namespace = 'default'; // TODO: Switch to a different project than default
+    const templateData: Template = JSON.parse(JSON.stringify(template));
+    templateData.parameters.forEach(parameter => {
+      parameter.value = data[parameter.name.toString()];
+    });
+
+    const secretData: PartialSecret = {
+      apiVersion: 'v1',
+      kind: 'Secret',
+      metadata: {
+        generateName: `${template.metadata.name}-parameters-`,
+        namespace: namespace,
+      },
+      stringData: data,
+    };
+
+    const response = await fetch(
+      `${config.getString(
+        'backend.baseUrl',
+      )}/api/catalog-info/secrets/${namespace}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(secretData),
+      },
+    );
+
+    const secret: Secret = await response.json();
+
+    const templateInstance: PartialTemplateInstance = {
+      apiVersion: 'template.openshift.io/v1',
+      kind: 'TemplateInstance',
+      metadata: {
+        generateName: `${template.metadata.name}-`,
+        namespace: namespace,
+      },
+      spec: {
+        secret: {
+          name: secret.metadata.name,
+        },
+        template: template,
+      },
+    };
+
+    fetch(
+      `${config.getString(
+        'backend.baseUrl',
+      )}/api/catalog-info/templateInstances/${namespace}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json', // This tells the server that the request body is JSON
+        },
+        body: JSON.stringify(templateInstance),
+      },
+    );
+
+    // TODO: Redirect to /clusters
+  };
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <Stack spacing={2}>
+        {template.parameters.map(parameter => {
+          return (
+            <TextField
+              classes={{ root: classes.textField }}
+              size="small"
+              variant="outlined"
+              label={
+                parameter.displayName
+                  ? parameter.displayName.toString()
+                  : parameter.name.toString()
+              }
+              InputLabelProps={{
+                shrink: true,
+              }}
+              {...register(parameter.name.toString())}
+            />
+          );
+        })}
+        <Stack spacing={2} direction="row">
+          <Button type="submit" variant="contained">
+            Order
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => {
+              if (window.history.state?.idx !== 0) {
+                navigate(-1);
+              } else {
+                navigate(templatesRoute);
+              }
+            }}
+          >
+            Cancel
+          </Button>
+        </Stack>
+      </Stack>
+    </form>
+  );
+};
+
+// TODO: Explore caching options when user is redirected from the template list to the order page.
+// All the data should be already available in such case.
+export const ItemOrder = () => {
+  const config = useApi(configApiRef);
+  const { namespace, name } = useRouteRefParams(itemOrderSubRouteRef);
+
   const { value, loading, error } = useAsync(async (): Promise<Template> => {
     const response = await fetch(
       `${config.getString(
@@ -82,43 +215,7 @@ export const ItemOrder = () => {
       <ContentHeader
         title={`Order ${value?.metadata.annotations['openshift.io/display-name']}`}
       />
-      <Stack spacing={2}>
-        {value?.parameters.map(parameter => {
-          return (
-            <FormControl classes={{ root: classes.formControl }}>
-              <TextField
-                id={parameter.name.toString()}
-                size="small"
-                variant="outlined"
-                label={
-                  parameter.displayName
-                    ? parameter.displayName.toString()
-                    : parameter.name.toString()
-                }
-                defaultValue={parameter.value}
-                InputLabelProps={{
-                  shrink: true,
-                }}
-              />
-            </FormControl>
-          );
-        })}
-        <Stack spacing={2} direction="row">
-          <Button variant="contained">Order</Button>
-          <Button
-            variant="outlined"
-            onClick={() => {
-              if (window.history.state?.idx !== 0) {
-                navigate(-1);
-              } else {
-                navigate(templatesRoute);
-              }
-            }}
-          >
-            Cancel
-          </Button>
-        </Stack>
-      </Stack>
+      <ItemForm template={value!} />
     </Content>
   );
 };

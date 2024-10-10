@@ -23,12 +23,16 @@ import express from 'express';
 import Router from 'express-promise-router';
 
 import { OpenShiftService } from './openshift.service';
+import { PartialSecret, Template } from './types';
 
 export interface RouterOptions {
   logger: LoggerService;
   config: RootConfigService;
 }
 
+// TODO: Improve error handling
+// TODO: Authentication
+// TODO: Documentation of the API endpoints
 export async function createRouter(
   options: RouterOptions,
 ): Promise<express.Router> {
@@ -46,8 +50,6 @@ export async function createRouter(
     logger.info('PONG!');
     response.json({ status: 'ok' });
   });
-
-  // TODO: Imperove error handling
 
   // Greedy routing, more specific routes need to be registered before the general routes to not get consumed.
   router.get('/templates/:namespace/:name', async (request, response) => {
@@ -77,6 +79,60 @@ export async function createRouter(
         logger.error(`GET '/templates' ERROR:\n${e.message}\n${e.stack}`);
       } else {
         logger.error(`GET '/templates' ERROR:\n${e}`);
+      }
+
+      response.status(500).send(e);
+    }
+  });
+
+  router.post('/templateInstances/:namespace', async (request, response) => {
+    const { namespace } = request.params;
+    const endpoint = `/templateInstances/${namespace}`;
+
+    try {
+      const template: Template = request.body;
+      logger.info(
+        `POST '${endpoint}' request.body:\n${JSON.stringify(template)}\n`,
+      );
+
+      const templateInstance = await openShiftService.createTemplateInstance(
+        namespace,
+        template,
+      );
+
+      response.send(templateInstance);
+    } catch (e) {
+      if (e instanceof Error) {
+        logger.error(`POST '${endpoint}' ERROR:\n${e.message}\n${e.stack}`);
+      } else {
+        logger.error(`POST '${endpoint}' ERROR:\n${e}`);
+      }
+
+      response.status(500).send(e);
+    }
+  });
+
+  router.post('/secrets/:namespace', async (request, response) => {
+    const { namespace } = request.params;
+    const endpoint = `/templateInstances/${namespace}`;
+
+    try {
+      const partialSecret: PartialSecret = request.body;
+      logger.info(
+        `POST '${endpoint}' request.body:\n${JSON.stringify(partialSecret)}\n`,
+      );
+
+      const secret = await openShiftService.createSecret(
+        namespace,
+        partialSecret,
+      );
+
+      response.send(secret);
+    } catch (e) {
+      if (e instanceof Error) {
+        logger.error(`POST '${endpoint}' ERROR:\n${e.message}\n${e.stack}`);
+      } else {
+        logger.error(`POST '${endpoint}' ERROR:\n${e}`);
       }
 
       response.status(500).send(e);

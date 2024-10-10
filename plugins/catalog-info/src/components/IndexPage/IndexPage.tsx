@@ -50,7 +50,7 @@ function getSelectedIndex(pathname: string, tabs: Tab[]): number {
     return 0;
   }
 
-  const id = pathParts[1];
+  const id = `/${pathParts[1]}`;
   const selectedIndex = tabs.findIndex(tab => tab.id === id);
 
   return selectedIndex < 0 ? 0 : selectedIndex;
