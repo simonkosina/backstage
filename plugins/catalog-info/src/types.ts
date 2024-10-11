@@ -15,13 +15,13 @@
  */
 
 export interface OpenShiftAPI {
-  getTemplates(): Promise<TemplateListSchema>;
+  getTemplates(): Promise<TemplateList>;
 }
 
 export type ArrayElement<A> = A extends (infer T)[] ? T : never;
 
 // https://docs.openshift.com/container-platform/4.16/rest_api/objects/index.html#com.github.openshift.api.template.v1.TemplateList
-export type TemplateListSchema = {
+export type TemplateList = {
   apiVersion: string;
   items: Template[];
   kind: string;

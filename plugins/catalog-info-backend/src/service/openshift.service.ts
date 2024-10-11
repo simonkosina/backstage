@@ -15,12 +15,13 @@
  */
 import {
   OpenShiftAPI,
-  TemplateListSchema,
+  TemplateList,
   Template,
   Secret,
   TemplateInstance,
   PartialSecret,
   PartialTemplateInstance,
+  DeploymentConfigList,
 } from './types';
 
 export class OpenShiftService implements OpenShiftAPI {
@@ -32,10 +33,9 @@ export class OpenShiftService implements OpenShiftAPI {
     this.authToken = authToken;
   }
 
-  async getTemplates(): Promise<TemplateListSchema> {
+  async getTemplates(): Promise<TemplateList> {
     return await fetch(
       `${this.baseUrl}/apis/template.openshift.io/v1/templates`,
-      // `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/openshift/templates`,
       {
         headers: {
           Authorization: `Bearer ${this.authToken}`,
@@ -48,14 +48,13 @@ export class OpenShiftService implements OpenShiftAPI {
         throw new Error(response.statusText);
       }
 
-      return response.json() as Promise<TemplateListSchema>;
+      return response.json() as Promise<TemplateList>;
     });
   }
 
   async getTemplate(namespace: string, name: string): Promise<Template> {
     return await fetch(
       `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/${namespace}/templates/${name}`,
-      // `${this.baseUrl}/apis/template.openshift.io/v1/namespaces/openshift/templates`,
       {
         headers: {
           Authorization: `Bearer ${this.authToken}`,
@@ -69,6 +68,25 @@ export class OpenShiftService implements OpenShiftAPI {
       }
 
       return response.json() as Promise<Template>;
+    });
+  }
+
+  async getDeploymentConfigs(namespace: string): Promise<DeploymentConfigList> {
+    return await fetch(
+      `${this.baseUrl}/apis/apps.openshift.io/v1/namespaces/${namespace}/deploymentconfigs`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.authToken}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+      },
+    ).then(response => {
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
+
+      return response.json() as Promise<DeploymentConfigList>;
     });
   }
 

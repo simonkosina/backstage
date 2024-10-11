@@ -85,7 +85,27 @@ export async function createRouter(
     }
   });
 
-  router.post('/templateInstances/:namespace', async (request, response) => {
+  router.get('/deploymentconfigs/:namespace', async (request, response) => {
+    const { namespace } = request.params;
+
+    try {
+      const deploymentConfigs = await openShiftService.getDeploymentConfigs(
+        namespace,
+      );
+      response.send(deploymentConfigs);
+    } catch (e) {
+      const endpoint = `/deploymentconfigs/${namespace}`;
+      if (e instanceof Error) {
+        logger.error(`GET '${endpoint}' ERROR:\n${e.message}\n${e.stack}`);
+      } else {
+        logger.error(`GET '${endpoint}' ERROR:\n${e}`);
+      }
+
+      response.status(500).send(e);
+    }
+  });
+
+  router.post('/templateinstances/:namespace', async (request, response) => {
     const { namespace } = request.params;
     const endpoint = `/templateInstances/${namespace}`;
 

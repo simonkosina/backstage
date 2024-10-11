@@ -23,7 +23,7 @@ import {
   LinkButton,
 } from '@backstage/core-components';
 import useAsync from 'react-use/lib/useAsync';
-// FIXME: Sharing types between backend and frontend plugins? Project structure?
+// TODO: See if it would be possible to share types between front-end and back-end plugin.
 import { Template, TemplateListSchema } from '../../types';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
@@ -45,8 +45,7 @@ import {
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import Close from '@material-ui/icons/Close';
 import defaultImage from '../../../assets/default.png';
-import { indexRouteRef, itemOrderSubRouteRef } from '../../routes';
-import { useNavigate } from 'react-router-dom';
+import { templateInstantiationSubRouteRef } from '../../routes';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 type TemplateCardsProps = {
@@ -59,9 +58,6 @@ type TemplateDrawerContentProps = {
   onCloseClick: () => void;
 };
 
-// FIXME: Item/Template naming
-// FIXME: Research styling practices in backstage/material UI
-// TODO: Design the UI in a responsive way to scale properly on smaller screens!
 const useTemplateCardsStyles = makeStyles((theme: Theme) => ({
   cardActionArea: {
     width: '100%',
@@ -207,10 +203,10 @@ export const TemplateCards = ({
               {template.metadata.annotations[
                 'openshift.io/provider-display-name'
               ]?.trim() && (
-                <Typography variant="caption">
-                  {`Provided by ${template.metadata.annotations['openshift.io/provider-display-name']}`}
-                </Typography>
-              )}
+                  <Typography variant="caption">
+                    {`Provided by ${template.metadata.annotations['openshift.io/provider-display-name']}`}
+                  </Typography>
+                )}
               <Typography variant="body2">
                 {template.metadata.annotations.description}
               </Typography>
@@ -229,7 +225,7 @@ export const TemplateDrawerContent = ({
   const classes = useTemplateDrawerContentStyles();
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
-  const createItemOrderRoute = useRouteRef(itemOrderSubRouteRef);
+  const templateInstantiationRoute = useRouteRef(templateInstantiationSubRouteRef);
 
   const labels = {
     'Created at': (
@@ -286,7 +282,7 @@ export const TemplateDrawerContent = ({
       <div className={classes.buttons}>
         <LinkButton
           variant="contained"
-          to={createItemOrderRoute({
+          to={templateInstantiationRoute({
             namespace: template.metadata.namespace,
             name: template.metadata.name,
           })}
@@ -318,7 +314,7 @@ export const TemplateDrawerContent = ({
   );
 };
 
-export const CatalogItems = () => {
+export const Templates = () => {
   const config = useApi(configApiRef);
   const classes = useTemplateDrawerStyles();
   const [drawerIsOpen, toggleDrawer] = useState(false);

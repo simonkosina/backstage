@@ -15,7 +15,6 @@
  */
 import { createSubRouteRef, createRouteRef } from '@backstage/core-plugin-api';
 
-// TODO: Might want to define other routes for /templates, /second-tab ... and use the paths in IndexPage component
 export const indexRouteRef = createRouteRef({
   id: 'catalog-info',
 });
@@ -26,13 +25,13 @@ export const templatesSubRouteRef = createSubRouteRef({
   path: '/templates',
 });
 
-export const clustersSubRouteRef = createSubRouteRef({
-  id: 'catalog-info-clusters',
+export const instancesSubRouteRef = createSubRouteRef({
+  id: 'catalog-info-instances',
   parent: indexRouteRef,
-  path: '/clusters',
+  path: '/instances',
 });
 
-export const itemOrderSubRouteRef = createSubRouteRef({
+export const templateInstantiationSubRouteRef = createSubRouteRef({
   id: 'catalog-info-item-order',
   parent: indexRouteRef,
   path: '/templates/order/:namespace/:name',

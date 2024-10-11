@@ -20,7 +20,11 @@ import {
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
-import { itemOrderSubRouteRef, templatesSubRouteRef } from '../../routes';
+import {
+  instancesSubRouteRef,
+  templateInstantiationSubRouteRef,
+  templatesSubRouteRef,
+} from '../../routes';
 import {
   configApiRef,
   useApi,
@@ -40,7 +44,7 @@ import Stack from '@mui/material/Stack';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 
-const useItemOrderStyles = makeStyles((theme: Theme) => ({
+const useTemplateFormStyles = makeStyles((theme: Theme) => ({
   textField: {
     transition: 'width 0.3s ease-in-out',
     width: theme.spacing(125),
@@ -68,23 +72,23 @@ function generateDefaultValues(parameters: Template['parameters']) {
   );
 }
 
-type ItemFormProps = {
+type TemplateFormProps = {
   template: Template;
 };
 
-// TODO: Form validation
-export const ItemForm = ({ template }: ItemFormProps) => {
+// TODO: Form validation, required params, regexes defined in params, etc.
+export const TemplateForm = ({ template }: TemplateFormProps) => {
   const navigate = useNavigate();
   const templatesRoute = useRouteRef(templatesSubRouteRef)();
+  const instancesRoute = useRouteRef(instancesSubRouteRef)();
   const config = useApi(configApiRef);
-  const classes = useItemOrderStyles();
+  const classes = useTemplateFormStyles();
   const { register, handleSubmit } = useForm({
     defaultValues: generateDefaultValues(template.parameters),
   });
 
-  // TODO: Error handling
   const onSubmit = async (data: Record<string, string | boolean>) => {
-    const namespace = 'default'; // TODO: Switch to a different project than default
+    const namespace = 'default'; // TODO: User based projects? Most probably some more logic will need to be implemented here.
     const templateData: Template = JSON.parse(JSON.stringify(template));
     templateData.parameters.forEach(parameter => {
       parameter.value = data[parameter.name.toString()];
@@ -100,7 +104,8 @@ export const ItemForm = ({ template }: ItemFormProps) => {
       stringData: data,
     };
 
-    const response = await fetch(
+    // FIXME: Needs error handling
+    fetch(
       `${config.getString(
         'backend.baseUrl',
       )}/api/catalog-info/secrets/${namespace}`,
@@ -111,39 +116,39 @@ export const ItemForm = ({ template }: ItemFormProps) => {
         },
         body: JSON.stringify(secretData),
       },
-    );
+    )
+      .then(response => response.json())
+      .then((secret: Secret) => {
+        const templateInstance: PartialTemplateInstance = {
+          apiVersion: 'template.openshift.io/v1',
+          kind: 'TemplateInstance',
+          metadata: {
+            generateName: `${template.metadata.name}-`,
+            namespace: namespace,
+          },
+          spec: {
+            secret: {
+              name: secret.metadata.name,
+            },
+            template: template,
+          },
+        };
 
-    const secret: Secret = await response.json();
+        return fetch(
+          `${config.getString(
+            'backend.baseUrl',
+          )}/api/catalog-info/templateinstances/${namespace}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json', // This tells the server that the request body is JSON
+            },
+            body: JSON.stringify(templateInstance),
+          },
+        );
+      });
 
-    const templateInstance: PartialTemplateInstance = {
-      apiVersion: 'template.openshift.io/v1',
-      kind: 'TemplateInstance',
-      metadata: {
-        generateName: `${template.metadata.name}-`,
-        namespace: namespace,
-      },
-      spec: {
-        secret: {
-          name: secret.metadata.name,
-        },
-        template: template,
-      },
-    };
-
-    fetch(
-      `${config.getString(
-        'backend.baseUrl',
-      )}/api/catalog-info/templateInstances/${namespace}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json', // This tells the server that the request body is JSON
-        },
-        body: JSON.stringify(templateInstance),
-      },
-    );
-
-    // TODO: Redirect to /clusters
+    navigate(instancesRoute);
   };
 
   return (
@@ -191,9 +196,11 @@ export const ItemForm = ({ template }: ItemFormProps) => {
 
 // TODO: Explore caching options when user is redirected from the template list to the order page.
 // All the data should be already available in such case.
-export const ItemOrder = () => {
+export const TemplateInstantiation = () => {
   const config = useApi(configApiRef);
-  const { namespace, name } = useRouteRefParams(itemOrderSubRouteRef);
+  const { namespace, name } = useRouteRefParams(
+    templateInstantiationSubRouteRef,
+  );
 
   const { value, loading, error } = useAsync(async (): Promise<Template> => {
     const response = await fetch(
@@ -215,7 +222,7 @@ export const ItemOrder = () => {
       <ContentHeader
         title={`Order ${value?.metadata.annotations['openshift.io/display-name']}`}
       />
-      <ItemForm template={value!} />
+      <TemplateForm template={value!} />
     </Content>
   );
 };

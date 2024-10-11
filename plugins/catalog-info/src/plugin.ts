@@ -18,13 +18,20 @@ import {
   createRoutableExtension,
 } from '@backstage/core-plugin-api';
 
-import { itemOrderSubRouteRef, indexRouteRef } from './routes';
+import {
+  indexRouteRef,
+  instancesSubRouteRef,
+  templatesSubRouteRef,
+  templateInstantiationSubRouteRef,
+} from './routes';
 
 export const catalogInfoPlugin = createPlugin({
   id: 'catalog-info',
   routes: {
     index: indexRouteRef,
-    itemOrder: itemOrderSubRouteRef,
+    instances: instancesSubRouteRef,
+    templates: templatesSubRouteRef,
+    templateInstantiation: templateInstantiationSubRouteRef,
   },
 });
 

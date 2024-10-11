@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import React, { PropsWithChildren } from 'react';
+import React from 'react';
 import {
   Header,
   Page,
@@ -24,18 +24,19 @@ import {
   InfoCard,
   HeaderTabs,
 } from '@backstage/core-components';
-import { CatalogItems } from '../CatalogItems';
+import { Templates } from '../Templates';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { Route } from 'react-router-dom';
 import {
-  clustersSubRouteRef,
+  instancesSubRouteRef,
   indexRouteRef,
-  itemOrderSubRouteRef,
   templatesSubRouteRef,
+  templateInstantiationSubRouteRef,
 } from '../../routes';
 import { useRouteRef } from '@backstage/core-plugin-api';
 import { FlatRoutes } from '@backstage/core-app-api';
-import { ItemOrder } from '../ItemOrder/ItemOrder';
+import { TemplateInstantiation } from '../TemplateInstantiation';
+import { Instances } from '../Instances';
 
 type Tab = {
   id: string;
@@ -63,11 +64,10 @@ export const IndexPage = () => {
 
   const tabs: Tab[] = [
     { id: templatesSubRouteRef.path, label: 'Templates' },
-    { id: clustersSubRouteRef.path, label: 'Clusters' },
+    { id: templateInstantiationSubRouteRef.path, label: 'Instances' },
   ];
 
   // TODO: Error page when path doesn't exist
-
   return (
     <Page themeId="tool">
       <Header title="Welcome to catalog-info!" subtitle="Optional subtitle">
@@ -85,20 +85,12 @@ export const IndexPage = () => {
         }}
       />
       <FlatRoutes>
-        <Route path={templatesSubRouteRef.path} element={<CatalogItems />} />
-        <Route path={itemOrderSubRouteRef.path} element={<ItemOrder />} />
+        <Route path={templatesSubRouteRef.path} element={<Templates />} />
         <Route
-          path={clustersSubRouteRef.path}
-          element={
-            <Content>
-              <ContentHeader title="Clusters" />
-              <InfoCard>
-                Nothing to see here, just for testing purposes. Later can be
-                used for displaying a list of user owned clusters.
-              </InfoCard>
-            </Content>
-          }
+          path={templateInstantiationSubRouteRef.path}
+          element={<TemplateInstantiation />}
         />
+        <Route path={instancesSubRouteRef.path} element={<Instances />} />
         <Route
           path="/"
           element={
