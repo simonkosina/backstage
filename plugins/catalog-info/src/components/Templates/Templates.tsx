@@ -21,6 +21,7 @@ import {
   ResponseErrorPanel,
   ItemCardGrid,
   LinkButton,
+  EmptyState,
 } from '@backstage/core-components';
 import useAsync from 'react-use/lib/useAsync';
 import { Template, TemplateList } from '../../types';
@@ -48,7 +49,7 @@ import { templateInstantiationSubRouteRef } from '../../routes';
 import { useRouteRef } from '@backstage/core-plugin-api';
 
 type TemplateCardsProps = {
-  templates: Template[];
+  templates?: Template[];
   onCardClick: (index: number) => void;
 };
 
@@ -174,6 +175,16 @@ export const TemplateCards = ({
   onCardClick,
 }: TemplateCardsProps) => {
   const classes = useTemplateCardsStyles();
+
+  if (!templates || templates.length === 0) {
+    return (
+      <EmptyState
+        missing="data"
+        title="No templates to show"
+        description="If the issue persists, please contact our team."
+      />
+    );
+  }
 
   return (
     <ItemCardGrid>
@@ -333,12 +344,11 @@ export const Templates = () => {
     return <ResponseErrorPanel error={error} />;
   }
 
-  // FIXME: Erorr handling in value.items indexing
   return (
     <Content>
       <ContentHeader title="Template List" />
       <TemplateCards
-        templates={value?.items || []}
+        templates={value?.items}
         onCardClick={(index: number) => {
           setSelectedIndex(index);
           toggleDrawer(true);

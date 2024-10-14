@@ -16,12 +16,13 @@
 import {
   Content,
   ContentHeader,
+  EmptyState,
   InfoCard,
   Progress,
   ResponseErrorPanel,
 } from '@backstage/core-components';
 import React from 'react';
-import { DeploymentConfigList } from '../../types';
+import { DeploymentConfig, DeploymentConfigList } from '../../types';
 import useAsync from 'react-use/esm/useAsync';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
@@ -41,10 +42,48 @@ const useInstancesStyles = makeStyles((theme: Theme) => ({
   },
 }));
 
+type InstancesTableProps = {
+  deploymentConfigs?: DeploymentConfig[];
+};
+
+export const InstancesTable = ({ deploymentConfigs }: InstancesTableProps) => {
+  const classes = useInstancesStyles();
+
+  if (!deploymentConfigs || deploymentConfigs.length === 0) {
+    return (
+      <EmptyState
+        missing="data"
+        title="No instances to show"
+        description="Create instances based on a selected template."
+      />
+    );
+  }
+
+  return (
+    <TableContainer component={Paper}>
+      <Table>
+        <TableBody>
+          {deploymentConfigs.map(deploymentConfig => (
+            <TableRow key={deploymentConfig.metadata.name}>
+              <TableCell component="th" scope="row">
+                {deploymentConfig.metadata.name}
+              </TableCell>
+              <TableCell className={classes.podsTableCell}>
+                {`${deploymentConfig.status.readyReplicas ?? 0} of ${
+                  deploymentConfig.status.replicas ?? 0
+                } Pod${deploymentConfig.status.replicas !== 1 ? 's' : ''}`}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
 export const Instances = () => {
   const config = useApi(configApiRef);
   const namespace = 'default'; // TODO: More logic might need to be implemented here.
-  const classes = useInstancesStyles();
 
   const { value, error, loading } =
     useAsync(async (): Promise<DeploymentConfigList> => {
@@ -66,24 +105,7 @@ export const Instances = () => {
   return (
     <Content>
       <ContentHeader title="Instances" />
-      <TableContainer component={Paper}>
-        <Table>
-          <TableBody>
-            {value!.items.map(deploymentConfig => (
-              <TableRow key={deploymentConfig.metadata.name}>
-                <TableCell component="th" scope="row">
-                  {deploymentConfig.metadata.name}
-                </TableCell>
-                <TableCell className={classes.podsTableCell}>
-                  {`${deploymentConfig.status.readyReplicas} of ${
-                    deploymentConfig.status.replicas
-                  } Pod${deploymentConfig.status.replicas > 1 ? 's' : ''}`}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      <InstancesTable deploymentConfigs={value?.items} />
     </Content>
   );
 };
