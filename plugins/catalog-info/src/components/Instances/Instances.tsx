@@ -13,17 +13,77 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import { Content, ContentHeader, InfoCard } from '@backstage/core-components';
+import {
+  Content,
+  ContentHeader,
+  InfoCard,
+  Progress,
+  ResponseErrorPanel,
+} from '@backstage/core-components';
 import React from 'react';
+import { DeploymentConfigList } from '../../types';
+import useAsync from 'react-use/esm/useAsync';
+import { configApiRef, useApi } from '@backstage/core-plugin-api';
+import {
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  Theme,
+  makeStyles,
+} from '@material-ui/core';
+
+const useInstancesStyles = makeStyles((theme: Theme) => ({
+  podsTableCell: {
+    width: theme.spacing(20),
+  },
+}));
 
 export const Instances = () => {
+  const config = useApi(configApiRef);
+  const namespace = 'default'; // TODO: More logic might need to be implemented here.
+  const classes = useInstancesStyles();
+
+  const { value, error, loading } =
+    useAsync(async (): Promise<DeploymentConfigList> => {
+      const response = await fetch(
+        `${config.getString(
+          'backend.baseUrl',
+        )}/api/catalog-info/deploymentconfigs/${namespace}`,
+      );
+
+      return response.json();
+    }, []);
+
+  if (loading) {
+    return <Progress />;
+  } else if (error) {
+    return <ResponseErrorPanel error={error} />;
+  }
+
   return (
     <Content>
       <ContentHeader title="Instances" />
-      <InfoCard>
-        Nothing to see here, just for testing purposes. Later can be used for
-        displaying a list of user owned clusters.
-      </InfoCard>
+      <TableContainer component={Paper}>
+        <Table>
+          <TableBody>
+            {value!.items.map(deploymentConfig => (
+              <TableRow key={deploymentConfig.metadata.name}>
+                <TableCell component="th" scope="row">
+                  {deploymentConfig.metadata.name}
+                </TableCell>
+                <TableCell className={classes.podsTableCell}>
+                  {`${deploymentConfig.status.readyReplicas} of ${
+                    deploymentConfig.status.replicas
+                  } Pod${deploymentConfig.status.replicas > 1 ? 's' : ''}`}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </Content>
   );
 };

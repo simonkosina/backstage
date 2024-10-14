@@ -23,8 +23,7 @@ import {
   LinkButton,
 } from '@backstage/core-components';
 import useAsync from 'react-use/lib/useAsync';
-// TODO: See if it would be possible to share types between front-end and back-end plugin.
-import { Template, TemplateListSchema } from '../../types';
+import { Template, TemplateList } from '../../types';
 import { configApiRef, useApi } from '@backstage/core-plugin-api';
 import {
   Box,
@@ -321,7 +320,7 @@ export const Templates = () => {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const { value, loading, error } =
-    useAsync(async (): Promise<TemplateListSchema> => {
+    useAsync(async (): Promise<TemplateList> => {
       const response = await fetch(
         `${config.getString('backend.baseUrl')}/api/catalog-info/templates`,
       );

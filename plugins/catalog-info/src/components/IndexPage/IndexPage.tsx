@@ -64,7 +64,7 @@ export const IndexPage = () => {
 
   const tabs: Tab[] = [
     { id: templatesSubRouteRef.path, label: 'Templates' },
-    { id: templateInstantiationSubRouteRef.path, label: 'Instances' },
+    { id: instancesSubRouteRef.path, label: 'Instances' },
   ];
 
   // TODO: Error page when path doesn't exist

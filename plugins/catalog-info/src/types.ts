@@ -130,3 +130,50 @@ export type Secret = {
 export type PartialSecret = Partial<Omit<Secret, 'metadata'>> & {
   metadata?: Partial<ObjectMeta>;
 };
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/objects/index.html#com-github-openshift-api-apps-v1-DeploymentConfigList
+export type DeploymentConfigList = {
+  apiVersion: string;
+  items: DeploymentConfig[];
+  kind: string;
+  metadata: ListMeta;
+};
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/workloads_apis/deploymentconfig-apps-openshift-io-v1.html
+export type DeploymentConfig = {
+  apiVersion: string;
+  kind: string;
+  metadata: ObjectMeta;
+  spec: Spec;
+  status: Status;
+};
+
+// TODO: If needed
+// https://docs.openshift.com/container-platform/4.17/rest_api/workloads_apis/deploymentconfig-apps-openshift-io-v1.html#spec
+export type Spec = object;
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/workloads_apis/deploymentconfig-apps-openshift-io-v1.html#status
+export type Status = {
+  availableReplicas: number;
+  conditions: DeploymentCondition[];
+  details: DeploymentDetails;
+  latestVersion: number;
+  observedGeneration: number;
+  readyReplicas: number;
+  replicas: number;
+  unavailableReplicas: number;
+  updatedReplicas: number;
+};
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/workloads_apis/deploymentconfig-apps-openshift-io-v1.html#status-conditions-2
+export type DeploymentCondition = {
+  lastTransitionTime: string;
+  lastUpdateTime: string;
+  message: string;
+  reason: string;
+  status: 'True' | 'False' | 'Unknown';
+  type: string;
+};
+
+// https://docs.openshift.com/container-platform/4.17/rest_api/workloads_apis/deploymentconfig-apps-openshift-io-v1.html#status-details
+export type DeploymentDetails = object;
