@@ -1,3 +1,25 @@
+# Resource Hub alternative POC
+
+The back-end plugin can be found in `plugins/catalog-info-backend`, front-end plugin is implemented in `plugins/catalog-info`. To access the plugin in your locally running backstage instance, go to http://localhost:3000/catalog-info. For the plugin to work properly you need to configure access to an OpenShift 4 cluster. Personally, I'd recommend copying the existing `app-config.yaml` into an `app-config.local.yaml` which is ignored by git. Insert the following code into the yaml at the top level and restart the running backstage instance.
+
+```
+catalogInfo:
+  baseUrl: <OCP4_CLUSTER_API_ADDR>
+  authToken: <OCP4_CLUSTER_API_TOKEN>
+```
+
+Here's an example of a working configuration.
+
+```
+catalogInfo:
+  baseUrl: https://api.skocp416.lab.upshift.rdu2.redhat.com:6443
+  authToken: sha256~XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+```
+
+If you plan to istantiate a template, I'd recommend creating a personal cluster in Resource Hub instead of the shared clusters, since the templates are instantiated in the default project (or change the project in the plugin code).
+
+---
+
 [![headline](docs/assets/headline.png)](https://backstage.io/)
 
 # [Backstage](https://backstage.io)
