@@ -95,7 +95,7 @@ export const IndexPage = () => {
           path="/"
           element={
             <Navigate
-              to={`${getIndexPath()}/${templatesSubRouteRef.path}`}
+              to={`${getIndexPath()}${templatesSubRouteRef.path}`}
               replace
             />
           }
